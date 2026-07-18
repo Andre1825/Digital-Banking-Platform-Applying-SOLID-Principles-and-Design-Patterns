@@ -1,0 +1,359 @@
+@startuml DiagramaClases_BancaDigital
+title Plataforma de Banca Digital - Banco Andino del Sur\nDiagrama de clases (patrones GoF/GRASP + SOLID)
+
+skinparam class {
+  BackgroundColor #FFFFFF
+  BorderColor #1565C0
+  ArrowColor #34495E
+  AttributeFontColor #6B7280
+}
+skinparam packageStyle rectangle
+hide empty members
+left to right direction
+
+' ======================================================================
+package "util (enums + excepciones)" #F4F7FB {
+  enum TipoProducto
+  enum Canal
+  enum EstadoTransaccion
+  enum NivelRiesgo
+  enum CategoriaServicio
+  enum TipoTransferencia
+  class SaldoInsuficienteException
+  class OperacionRechazadaException
+  class AccesoDenegadoException
+  class RedCaidaException
+  class Log
+}
+
+' ======================================================================
+package "entity (dominio)" #EEF6EF {
+  class Cliente {
+    - id : int
+    - documento : String
+    - segmento : String
+    + agregarProducto(p)
+    + getPortafolio()
+  }
+
+  abstract class ProductoFinanciero {
+    # numero : String
+    # saldo : double
+    + {abstract} validarApertura(c)
+    + {abstract} calcularInteres() : double
+    + consultarSaldo() : double
+  }
+  interface Retirable { + retirar(monto) }
+
+  class CuentaAhorro
+  class CuentaCorriente
+  class DepositoPlazoFijo { + getPlazoMeses() }
+  class PrestamoPersonal { - score : int }
+  class TarjetaCredito {
+    - intentosSospechosos : int
+    + autorizar(monto)
+    + bloquear()
+    + registrarIntentoSospechoso() : boolean
+  }
+
+  interface EstadoTarjeta {
+    + autorizar(t, monto)
+    + bloquear(t)
+    + nombre() : String
+  }
+  class EstadoActiva
+  class EstadoBloqueoPreventivo
+  class EstadoCancelada
+
+  class PerfilSeguridad {
+    + guardarEstado() : PerfilMemento
+    + restaurar(m)
+  }
+  class PerfilMemento
+
+  class Transaccion
+  class Orden { - tipo : TipoTransferencia }
+  class AlertaFraude
+  class Solicitud
+  class Sesion {
+    - token : String
+    + estaVigente() : boolean
+    + refrescar()
+  }
+  class ServicioPublico
+}
+
+ProductoFinanciero <|-- CuentaAhorro
+ProductoFinanciero <|-- CuentaCorriente
+ProductoFinanciero <|-- DepositoPlazoFijo
+ProductoFinanciero <|-- PrestamoPersonal
+ProductoFinanciero <|-- TarjetaCredito
+Retirable <|.. CuentaAhorro
+Retirable <|.. CuentaCorriente
+Cliente "1" o-- "*" ProductoFinanciero : portafolio
+EstadoTarjeta <|.. EstadoActiva
+EstadoTarjeta <|.. EstadoBloqueoPreventivo
+EstadoTarjeta <|.. EstadoCancelada
+TarjetaCredito o-- EstadoTarjeta : estado (STATE)
+PerfilSeguridad ..> PerfilMemento : crea (MEMENTO)
+
+' ======================================================================
+package "service :: creacionales" #FBF6EE {
+  abstract class ProductoFactory {
+    + {abstract} crearProducto() : ProductoFinanciero
+    + abrir(cliente) : ProductoFinanciero
+  }
+  class CuentaAhorroFactory
+  class CuentaCorrienteFactory
+  class DepositoPlazoFijoFactory
+  class TarjetaCreditoFactory
+  class PrestamoFactory
+
+  interface CanalFactory {
+    + crearAutenticador() : Autenticador
+    + crearNotificador() : Notificador
+  }
+  class CanalWebFactory
+  class CanalMovilFactory
+  interface Autenticador
+  interface Notificador
+
+  interface SolicitudBuilder
+  class PrestamoPersonalBuilder
+  class SolicitudDirector
+
+  interface "Prototipo<T>" as Prototipo
+  class PlantillaProducto
+}
+
+ProductoFactory <|-- CuentaAhorroFactory
+ProductoFactory <|-- CuentaCorrienteFactory
+ProductoFactory <|-- DepositoPlazoFijoFactory
+ProductoFactory <|-- TarjetaCreditoFactory
+ProductoFactory <|-- PrestamoFactory
+ProductoFactory ..> ProductoFinanciero : «crea»
+CanalFactory <|.. CanalWebFactory
+CanalFactory <|.. CanalMovilFactory
+CanalFactory ..> Autenticador
+CanalFactory ..> Notificador
+SolicitudBuilder <|.. PrestamoPersonalBuilder
+SolicitudDirector o--> SolicitudBuilder
+SolicitudBuilder ..> Solicitud
+Prototipo <|.. PlantillaProducto
+
+' ======================================================================
+package "service :: estructurales" #F0F4FB {
+  interface ComponentePortafolio { + saldoConsolidado() : double }
+  class ProductoSimple
+  class GrupoProductos
+
+  interface ConsultaCore { + obtenerSaldo(cuenta) : double }
+  class ConsultaCoreReal
+  class ConsultaCoreProxy
+
+  interface RedInterbancaria { + transferir(orden) : boolean }
+  class AdaptadorCCE
+  class WsCamaraCompensacion
+
+  interface PasarelaPago {
+    + procesar(ref, monto) : Comprobante
+    + disponible() : boolean
+  }
+  class PasarelaNiubiz
+  class PasarelaPagoEfectivo
+  class Comprobante
+
+  abstract class ProcesoTransaccion
+  class TransaccionBase
+  abstract class SeguridadDecorator
+  class DecoradorDobleFactor
+  class DecoradorAntifraude
+  class DecoradorAuditoria
+
+  class TransferenciaFacade
+}
+
+ComponentePortafolio <|.. ProductoSimple
+ComponentePortafolio <|.. GrupoProductos
+GrupoProductos o-- "*" ComponentePortafolio : COMPOSITE
+ProductoSimple ..> ProductoFinanciero
+ConsultaCore <|.. ConsultaCoreReal
+ConsultaCore <|.. ConsultaCoreProxy
+ConsultaCoreProxy o--> ConsultaCoreReal : PROXY (permisos+caché)
+RedInterbancaria <|.. AdaptadorCCE
+AdaptadorCCE o--> WsCamaraCompensacion : ADAPTER
+PasarelaPago <|.. PasarelaNiubiz
+PasarelaPago <|.. PasarelaPagoEfectivo
+PasarelaPago ..> Comprobante
+ProcesoTransaccion <|.. TransaccionBase
+ProcesoTransaccion <|.. SeguridadDecorator
+SeguridadDecorator o--> ProcesoTransaccion : DECORATOR
+SeguridadDecorator <|-- DecoradorDobleFactor
+SeguridadDecorator <|-- DecoradorAntifraude
+SeguridadDecorator <|-- DecoradorAuditoria
+
+' ======================================================================
+package "service :: comportamiento" #FBEEF3 {
+  interface Comando {
+    + ejecutar()
+    + extornar()
+  }
+  class ComandoTransferencia
+  class ComandoPagoServicio
+  class ComandoInestable
+  class ColaOperaciones {
+    + ejecutarConReintento(c, n) : boolean
+    + extornarUltimo()
+    + reintentarPendientes() : int
+  }
+
+  interface Observador { + actualizar(t) }
+  class MotorFraude {
+    + evaluarRiesgo(t) : AlertaFraude
+    + vigilarAutorizacion(tarjeta, monto) : boolean
+  }
+  class RegistradorTransacciones
+
+  abstract class Alerta
+  class AlertaOperacionInusual
+  class AvisoVencimiento
+  interface CanalEnvio
+  class CanalEmail
+  class CanalSMS
+  class CanalPush
+
+  class HistorialPerfil
+  interface CalculadoraInteres { + calcular(p) : double }
+  class InteresAhorro
+  class InteresPrestamo
+  class InteresTarjeta
+  class InteresPlazoEscalonado
+}
+
+Comando <|.. ComandoTransferencia
+Comando <|.. ComandoPagoServicio
+Comando <|.. ComandoInestable
+ComandoInestable o--> Comando : envuelve
+ColaOperaciones o-- "*" Comando : COMMAND
+Observador <|.. MotorFraude
+RegistradorTransacciones o-- "*" Observador : OBSERVER
+MotorFraude ..> TarjetaCredito : dispara auto-bloqueo (CP04)
+Alerta <|-- AlertaOperacionInusual
+Alerta <|-- AvisoVencimiento
+Alerta o--> CanalEnvio : BRIDGE
+CanalEnvio <|.. CanalEmail
+CanalEnvio <|.. CanalSMS
+CanalEnvio <|.. CanalPush
+HistorialPerfil o-- "*" PerfilMemento : MEMENTO (caretaker)
+CalculadoraInteres <|.. InteresAhorro
+CalculadoraInteres <|.. InteresPrestamo
+CalculadoraInteres <|.. InteresTarjeta
+CalculadoraInteres <|.. InteresPlazoEscalonado
+
+' ======================================================================
+package "service :: seguridad/core (GRASP+DIP+Singleton)" #EFF7F6 {
+  class GestorSesiones <<Singleton>> {
+    + solicitarCodigo(u, clave) : String
+    + iniciarSesion(u, otp, canal) : Sesion
+    + validar(token) : boolean
+  }
+  class GeneradorOTP
+  class ValidadorSeguridad
+  interface CoreBancario
+  class CoreBancarioImpl
+  interface VerificadorIdentidad
+  class VerificadorIdentidadReniec
+  class ServicioCuentas
+  class CatalogoServicios
+}
+
+GestorSesiones o--> GeneradorOTP
+GestorSesiones ..> Sesion : crea/controla
+ValidadorSeguridad ..> GestorSesiones : valida sesión (RF01)
+CoreBancario <|.. CoreBancarioImpl
+VerificadorIdentidad <|.. VerificadorIdentidadReniec
+CatalogoServicios ..> ServicioPublico
+
+' ======================================================================
+package "database (Singleton)" #F4F7FB {
+  class ConexionBD <<Singleton>>
+}
+
+' ======================================================================
+package "controller (GRASP)" #EEF6EF {
+  class ProductoControlador
+  class CreditoControlador
+  class TransferenciaControlador
+  class SeguridadControlador
+}
+ProductoControlador ..> ProductoFactory
+CreditoControlador ..> SolicitudDirector
+TransferenciaControlador ..> TransferenciaFacade
+SeguridadControlador o--> HistorialPerfil
+
+' ======================================================================
+package "reportes" #FBF6EE {
+  class ReporteIndicadores {
+    + generarPosicionConsolidada(...)
+    + generarTableroGerencial(m) : String
+  }
+  class MetricasBanco <<Singleton>>
+}
+ReporteIndicadores ..> ComponentePortafolio
+ReporteIndicadores ..> MetricasBanco
+
+' ======================================================================
+package "formularios (GUI Swing)" #F0F4FB {
+  class AppBancaDigital <<main>>
+  class Contexto
+  class ConsolaLog
+  class Tema
+  abstract class PanelBase
+  interface Refrescable
+  class PanelInicio
+  class PanelAcceso
+  class PanelProductos
+  class PanelTransferencias
+  class PanelPagos
+  class PanelPosicion
+  class PanelSeguridad
+  class PanelCreditos
+  class PanelMonitoreo
+  class PanelOperaciones
+  class PanelIntegraciones
+  class PanelInnovacion
+}
+
+Refrescable <|.. PanelBase
+PanelBase <|-- PanelInicio
+PanelBase <|-- PanelAcceso
+PanelBase <|-- PanelProductos
+PanelBase <|-- PanelTransferencias
+PanelBase <|-- PanelPagos
+PanelBase <|-- PanelPosicion
+PanelBase <|-- PanelSeguridad
+PanelBase <|-- PanelCreditos
+PanelBase <|-- PanelMonitoreo
+PanelBase <|-- PanelOperaciones
+PanelBase <|-- PanelIntegraciones
+PanelBase <|-- PanelInnovacion
+
+AppBancaDigital o--> Contexto
+AppBancaDigital o--> ConsolaLog
+AppBancaDigital o-- "*" PanelBase
+Contexto o--> Cliente
+Contexto o--> PerfilSeguridad
+Contexto o--> ColaOperaciones
+Contexto o--> GestorSesiones
+Contexto o--> MetricasBanco
+PanelTransferencias ..> TransferenciaControlador
+PanelProductos ..> ProductoControlador
+PanelCreditos ..> CreditoControlador
+PanelSeguridad ..> SeguridadControlador
+PanelAcceso ..> GestorSesiones
+PanelMonitoreo ..> MotorFraude
+PanelOperaciones ..> ColaOperaciones
+PanelPagos ..> PasarelaPago
+PanelInnovacion ..> InteresPlazoEscalonado
+
+@enduml

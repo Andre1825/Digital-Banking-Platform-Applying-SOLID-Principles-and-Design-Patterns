@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project name="AppEmpresa" default="default" basedir=".">
+    <description>Plataforma de Banca Digital - Banco Andino del Sur (Diseno de Patrones)</description>
+    <import file="nbproject/build-impl.xml"/>
+</project>

@@ -1,0 +1,32 @@
+# =====================================================================
+#  Servidor MySQL 8 para el Sistema Bancario.
+#  Las credenciales y el puerto coinciden EXACTAMENTE con
+#  src/uni/database/AccesoDB.java -> conexion sin configuracion extra.
+#
+#  Uso:
+#    docker compose up -d      (inicia la BD; la primera vez carga db/init)
+#    docker compose down       (detiene; los datos persisten en el volumen)
+#    docker compose down -v    (detiene y BORRA los datos)
+# =====================================================================
+services:
+  mysql:
+    image: mysql:8.0
+    container_name: banco_mysql
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: root        # == AccesoDB.CLAVE
+      MYSQL_DATABASE: banco            # == AccesoDB.BD
+    ports:
+      - "3306:3306"                    # == AccesoDB.PUERTO
+    volumes:
+      - banco_datos:/var/lib/mysql                 # persistencia
+      - ./db/init:/docker-entrypoint-initdb.d:ro   # script auto-ejecutado
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-uroot", "-proot"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 30s
+
+volumes:
+  banco_datos:
