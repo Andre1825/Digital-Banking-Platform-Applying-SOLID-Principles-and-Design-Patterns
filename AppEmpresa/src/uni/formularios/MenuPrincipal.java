@@ -30,6 +30,10 @@ public class MenuPrincipal extends JFrame {
         setMinimumSize(new Dimension(780, 500));
         setLocationRelativeTo(null);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+
+        ImageIcon appIcon = Tema.cargarIcono("account_balance_new.png", 32, 32);
+        if (appIcon != null) setIconImage(appIcon.getImage());
+
         setJMenuBar(crearMenu());
         setContentPane(crearContenido());
         refrescarIndicadores();
@@ -152,12 +156,12 @@ public class MenuPrincipal extends JFrame {
         lblDepositos = kpiValor();
 
         return Tema.grilla(3, 18,
-                kpiCard("Clientes registrados", lblClientes,  Tema.PRIMARY),
-                kpiCard("Cuentas activas",       lblCuentas,   Tema.ACCENT),
-                kpiCard("Total depositado (S/)", lblDepositos, new Color(0xE39A0C)));
+                kpiCard("Clientes registrados", lblClientes,  Tema.PRIMARY,         "people.png"),
+                kpiCard("Cuentas activas",       lblCuentas,   Tema.ACCENT,          "credit_card.png"),
+                kpiCard("Total depositado (S/)", lblDepositos, new Color(0xE39A0C), "payments.png"));
     }
 
-    private JComponent kpiCard(String etiqueta, JLabel valor, Color acento) {
+    private JComponent kpiCard(String etiqueta, JLabel valor, Color acento, String iconoNombre) {
         Tema.RoundedPanel card = new Tema.RoundedPanel(16, Tema.CARD, Tema.BORDE);
         card.setLayout(new BorderLayout());
         card.setBorder(new EmptyBorder(20, 20, 20, 20));
@@ -179,6 +183,15 @@ public class MenuPrincipal extends JFrame {
 
         card.add(barra, BorderLayout.WEST);
         card.add(txt,   BorderLayout.CENTER);
+
+        ImageIcon icono = Tema.cargarIcono(iconoNombre, 28, 28);
+        if (icono != null) {
+            JLabel lblIcono = new JLabel(icono);
+            lblIcono.setOpaque(false);
+            lblIcono.setBorder(new EmptyBorder(0, 0, 0, 4));
+            card.add(lblIcono, BorderLayout.EAST);
+        }
+
         return card;
     }
 

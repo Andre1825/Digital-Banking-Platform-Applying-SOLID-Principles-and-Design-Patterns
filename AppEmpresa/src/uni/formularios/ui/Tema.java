@@ -185,6 +185,18 @@ public final class Tema {
         return p;
     }
 
+    /** Carga un PNG desde /imagen/ y lo escala; retorna null si no existe. */
+    public static ImageIcon cargarIcono(String nombre, int w, int h) {
+        try {
+            java.net.URL url = Tema.class.getResource("/imagen/" + nombre);
+            if (url == null) return null;
+            Image img = new ImageIcon(url).getImage().getScaledInstance(w, h, Image.SCALE_SMOOTH);
+            return new ImageIcon(img);
+        } catch (Exception e) {
+            return null;
+        }
+    }
+
     // ===================== Componentes personalizados =====================
 
     /** Panel con esquinas redondeadas y borde opcional (antialiasing). */

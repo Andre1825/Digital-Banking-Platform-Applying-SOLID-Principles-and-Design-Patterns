@@ -7,7 +7,6 @@ import uni.util.Validaciones;
 
 import java.util.List;
 
-/** Fachada de negocio para Cliente, con validacion de DNI y correo. */
 public class ClienteControlador {
 
     private final ClienteDAO dao = new ClienteDAO();

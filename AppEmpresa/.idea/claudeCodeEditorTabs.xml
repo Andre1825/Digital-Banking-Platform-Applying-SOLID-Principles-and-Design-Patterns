@@ -1,26 +1,23 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="ClaudeCodeEditorTabs">
-    <option name="activeSessionId" value="54d2c957-ef16-4007-822d-886df4aa10b9" />
+    <option name="activeSessionId" value="a01f22f4-6605-4be7-a548-998380ad840d" />
     <option name="openSessionIds">
       <list>
-        <option value="f8e2b949-abc6-4058-a0a4-19df8c642ab6" />
         <option value="2a4950e5-ca99-4df1-bbfb-dd7496474d8b" />
-        <option value="54d2c957-ef16-4007-822d-886df4aa10b9" />
+        <option value="a01f22f4-6605-4be7-a548-998380ad840d" />
       </list>
     </option>
     <option name="sessionPaths">
       <map>
         <entry key="2a4950e5-ca99-4df1-bbfb-dd7496474d8b" value="/sessions/1a8be053-f5f9-42e6-ae2d-32508d975acf" />
-        <entry key="54d2c957-ef16-4007-822d-886df4aa10b9" value="/sessions/cca80869-c0c4-4ec6-bf31-4a99a340e9f3" />
-        <entry key="f8e2b949-abc6-4058-a0a4-19df8c642ab6" value="/sessions/new" />
+        <entry key="a01f22f4-6605-4be7-a548-998380ad840d" value="/sessions/efcb529c-7e55-4762-87da-e3bb8d488531" />
       </map>
     </option>
     <option name="sessionTitles">
       <map>
         <entry key="2a4950e5-ca99-4df1-bbfb-dd7496474d8b" value="extend this existing Project, and now I wanna you" />
-        <entry key="54d2c957-ef16-4007-822d-886df4aa10b9" value="me sale eso: C:\Users\ADMIN\.jdks\openjdk-25.0.1\b" />
-        <entry key="f8e2b949-abc6-4058-a0a4-19df8c642ab6" value="Claude Code" />
+        <entry key="a01f22f4-6605-4be7-a548-998380ad840d" value="respecto a las images de este proyecto puedes añad" />
       </map>
     </option>
   </component>

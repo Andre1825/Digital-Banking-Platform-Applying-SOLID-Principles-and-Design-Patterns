@@ -29,6 +29,9 @@ public class LoginBanco extends JFrame {
         setLocationRelativeTo(null);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
+        ImageIcon appIcon = Tema.cargarIcono("account_balance_new.png", 32, 32);
+        if (appIcon != null) setIconImage(appIcon.getImage());
+
         JPanel raiz = new JPanel(new BorderLayout());
         raiz.setBackground(Tema.BG);
         raiz.add(panelMarca(), BorderLayout.WEST);
@@ -47,7 +50,10 @@ public class LoginBanco extends JFrame {
         marca.setLayout(new BoxLayout(marca, BoxLayout.Y_AXIS));
         marca.setBorder(new EmptyBorder(48, 40, 40, 40));
 
-        JLabel logo = new JLabel("◆  BANCO ANDINO DEL SUR");
+        ImageIcon iconoLogo = Tema.cargarIcono("account_balance_new.png", 44, 44);
+        JLabel logo = iconoLogo != null
+                ? new JLabel("  BANCO ANDINO DEL SUR", iconoLogo, JLabel.LEFT)
+                : new JLabel("◆  BANCO ANDINO DEL SUR");
         logo.setFont(new Font("Segoe UI", Font.BOLD, 18));
         logo.setForeground(Color.WHITE);
         logo.setAlignmentX(LEFT_ALIGNMENT);
@@ -83,11 +89,34 @@ public class LoginBanco extends JFrame {
     }
 
     private JComponent vinieta(String texto) {
-        JLabel l = new JLabel("✓   " + texto);
+        JPanel fila = new JPanel();
+        fila.setOpaque(false);
+        fila.setLayout(new BoxLayout(fila, BoxLayout.X_AXIS));
+        fila.setAlignmentX(LEFT_ALIGNMENT);
+
+        JPanel dot = new JPanel() {
+            @Override protected void paintComponent(Graphics g) {
+                Graphics2D g2 = (Graphics2D) g.create();
+                g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+                g2.setColor(new Color(0x4FC3A0));
+                g2.fillOval(0, (getHeight() - 8) / 2, 8, 8);
+                g2.dispose();
+            }
+            @Override public Dimension getPreferredSize() { return new Dimension(8, 18); }
+            @Override public Dimension getMaximumSize()   { return new Dimension(8, 18); }
+            @Override public Dimension getMinimumSize()   { return new Dimension(8, 18); }
+        };
+        dot.setOpaque(false);
+
+        JLabel l = new JLabel(texto);
         l.setFont(new Font("Segoe UI", Font.PLAIN, 13));
         l.setForeground(new Color(0xE3ECF7));
-        l.setAlignmentX(LEFT_ALIGNMENT);
-        return l;
+
+        fila.add(dot);
+        fila.add(Box.createHorizontalStrut(10));
+        fila.add(l);
+        fila.add(Box.createHorizontalGlue());
+        return fila;
     }
 
     // ===================== Panel derecho (formulario) =====================
